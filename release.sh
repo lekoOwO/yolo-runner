@@ -14,8 +14,9 @@ cd "$SCRIPT_DIR"
 
 # Configuration
 IMAGE_NAME="gha-runner-yolo"
-VERSION=${VERSION:-"2.333.0-yolo-1"}
-REGISTRY="0x6a6f6e6e79"
+RUNNER_VERSION=$(cat releaseVersion 2>/dev/null || echo "2.333.0")
+VERSION=${VERSION:-"${RUNNER_VERSION}-yolo-1"}
+REGISTRY="ghcr.io/lekoowo/yolo-runner"
 
 echo -e "${BLUE}🚀 YOLO Runner Release${NC}"
 echo ""
