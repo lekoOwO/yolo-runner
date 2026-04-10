@@ -16,6 +16,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl wget sudo git jq ca-certificates gnupg lsb-release apt-transport-https gnupg2 \
     iproute2 procps lsof util-linux gpg openssh-client \
+    libicu70 \
+    libssl3 \
+    zlib1g \
+    libkrb5-3 \
+    libgssapi-krb5-2 \
   && mkdir -p /etc/apt/keyrings \
   && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
   && echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list \
@@ -46,12 +51,14 @@ COPY --from=builder /build/_layout /home/runner/actions
 COPY start.sh /home/runner/actions/start.sh
 RUN chmod +x /home/runner/actions/start.sh
 
-# Install missing ICU library for Ubuntu 22.04 but error is for 71
-#RUN apt-get update && apt-get install -y --no-install-recommends libicu70
-
 # Run any installer as root (installs runner deps), then drop to non-root
 RUN if [ -x /home/runner/actions/bin/installdependencies.sh ]; then /home/runner/actions/bin/installdependencies.sh; fi \
  && chown -R runner:runner /home/runner/actions
+
+RUN cd /home/runner/actions/bin && \
+    ln -s coreclr.so libcoreclr.so || true && \
+    ln -s System.Security.Cryptography.Native.OpenSsl.so libSystem.Security.Cryptography.Native.OpenSsl.so || true && \
+    ln -s System.IO.Compression.Native.so libSystem.IO.Compression.Native.so || true
 
 USER runner
 WORKDIR /home/runner/actions
